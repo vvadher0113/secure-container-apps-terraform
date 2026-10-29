@@ -1,4 +1,4 @@
-FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS builder
+FROM python:3.12-slim@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b AS builder
 
 WORKDIR /build
 COPY requirements.txt .
@@ -6,7 +6,7 @@ RUN python -m venv /venv \
     && /venv/bin/pip install --no-cache-dir --upgrade pip "setuptools>=78.1.1" \
     && /venv/bin/pip install --no-cache-dir -r requirements.txt
 
-FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
+FROM python:3.12-slim@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b
 
 RUN addgroup --system --gid 1001 app \
     && adduser --system --uid 1001 --gid 1001 --no-create-home app
