@@ -147,6 +147,16 @@ jobs:
           load: true
           tags: ${{ matrix.app }}:ci
 
+      - name: Trivy image findings (visible)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          image-ref: ${{ matrix.app }}:ci
+          severity: HIGH,CRITICAL
+          exit-code: "0"
+          ignore-unfixed: true
+          vuln-type: os,library
+          format: table
+
       - name: Trivy image scan
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
         with:
