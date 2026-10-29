@@ -9,6 +9,7 @@
 !.tflint.hcl
 !.checkov.yaml
 !.trivyignore
+!trivy.yaml
 
 # Terraform
 !*.tf
