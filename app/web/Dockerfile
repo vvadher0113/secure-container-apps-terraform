@@ -1,6 +1,6 @@
 # Update the digest by running: docker pull nginxinc/nginx-unprivileged:1.27-alpine
 # and copying "Digest: sha256:..." from the output.
-FROM nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY html/ /usr/share/nginx/html/
