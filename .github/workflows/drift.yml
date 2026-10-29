@@ -1,0 +1,92 @@
+# Reference deployment workflow.
+# Run manually via workflow_dispatch after configuring OIDC and repo variables.
+# Every job is gated on vars.AZURE_SUBSCRIPTION_ID so it skips cleanly without setup.
+# See README.md for the full list of required repo variables.
+#
+# In a live environment, change the trigger to a schedule, for example:
+#   schedule:
+#     - cron: "0 6 * * *"
+# Exit code semantics: 0 = no changes, 1 = error, 2 = drift detected.
+# This job opens a GitHub issue when drift is found and fails when plan errors.
+name: Drift detection (reference)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+
+jobs:
+  drift:
+    name: Detect configuration drift
+    runs-on: ubuntu-latest
+    if: vars.AZURE_SUBSCRIPTION_ID != ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474 # v2.3.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: "~1.10"
+
+      - name: Init
+        working-directory: infra/envs/dev
+        env:
+          ARM_USE_OIDC: "true"
+          ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          set -o pipefail
+          terraform init \
+            -backend-config="resource_group_name=${{ vars.TF_BACKEND_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_BACKEND_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_BACKEND_CONTAINER }}" \
+            -backend-config="key=envs/dev/terraform.tfstate" \
+            -input=false -no-color
+
+      - name: Plan with detailed exit code
+        id: plan
+        working-directory: infra/envs/dev
+        env:
+          ARM_USE_OIDC: "true"
+          ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          terraform plan \
+            -var="subscription_id=${{ vars.AZURE_SUBSCRIPTION_ID }}" \
+            -var="tenant_id=${{ vars.AZURE_TENANT_ID }}" \
+            -detailed-exitcode -input=false -no-color > drift.txt 2>&1 || PLAN_EXIT=$?
+          cat drift.txt
+          echo "exitcode=${PLAN_EXIT:-0}" >> "$GITHUB_OUTPUT"
+
+      - name: Fail on plan error
+        if: steps.plan.outputs.exitcode == '1'
+        run: exit 1
+
+      - name: Open issue on drift
+        if: steps.plan.outputs.exitcode == '2'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Infrastructure drift detected ${new Date().toISOString().split('T')[0]}`,
+              body: [
+                'Terraform plan detected infrastructure drift.',
+                '',
+                `Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                'Review the plan output in the run logs and apply if the drift is expected.',
+              ].join('\n'),
+              labels: ['drift'],
+            })

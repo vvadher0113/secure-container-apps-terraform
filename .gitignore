@@ -1,0 +1,69 @@
+# Allowlist: ignore everything, then allow only what this repo should track.
+*
+!*/
+
+# Repo root files
+!.gitignore
+!LICENSE
+!README.md
+!.tflint.hcl
+!.checkov.yaml
+!.trivyignore
+
+# Terraform
+!*.tf
+!*.tftest.hcl
+!*.tfvars.example
+!*.hcl.example
+!.terraform.lock.hcl
+
+# Docs
+!docs/**/*.md
+!docs/**/*.png
+!docs/**/*.svg
+!modules/**/README.md
+!modules/**/examples/**/README.md
+
+# GitHub workflows and Dependabot
+!.github/workflows/*.yml
+!.github/dependabot.yml
+
+# Application code
+!app/**/*.py
+!app/**/requirements*.txt
+!app/**/Dockerfile
+!app/**/.dockerignore
+!app/**/*.conf
+!app/**/*.html
+!app/**/*.css
+!app/**/*.js
+!app/**/*.sql
+!app/**/pytest.ini
+
+# Always excluded, even if matched above
+CLAUDE.md
+**/CLAUDE.md
+.claude/
+**/.claude/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

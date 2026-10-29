@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars and fill in before running terraform apply.
+# Never commit terraform.tfvars - it is excluded by .gitignore.
+
+subscription_id            = "00000000-0000-0000-0000-000000000000"
+tenant_id                  = "00000000-0000-0000-0000-000000000000"
+entra_admin_object_id      = "00000000-0000-0000-0000-000000000001"
+entra_admin_principal_name = "id-migrate"
+subnet_id                  = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/virtualNetworks/vnet-example/subnets/snet-pe"
+private_dns_zone_id        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com"

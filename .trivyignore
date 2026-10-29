@@ -1,0 +1,14 @@
+# App Gateway NSG must accept internet traffic on ports 80 and 443; WAF Policy Prevention mode is the compensating control.
+AVD-AZU-0047
+
+# State storage is intentionally accessible from CI runners; security relies on Entra auth and disabled shared keys.
+AVD-AZU-0012
+
+# Blob logging on the bootstrap state account is beyond the scope of this demo.
+AVD-AZU-0057
+
+# LRS replication is sufficient for dev/demo Terraform state.
+AVD-AZU-0058
+
+# Customer-managed keys on state storage are beyond the scope of this demo bootstrap.
+AVD-AZU-0060

@@ -1,0 +1,40 @@
+# Copy to terraform.tfvars and fill in before running terraform apply.
+# Never commit terraform.tfvars - it is excluded by .gitignore.
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+location        = "eastus2"
+app_name        = "goals"
+environment     = "dev"
+
+vnet_address_space = ["10.20.0.0/22"]
+
+# ── Images ────────────────────────────────────────────────────────────────────
+# Phase 1 (first apply): leave commented out. The quickstart placeholder image
+#   is used so all resources can be created before any real images exist.
+# Phase 2 (after build-push): uncomment and set real ACR image tags, then re-apply.
+#
+# app_images = {
+#   web     = "<acr_login_server>/web:<commit_sha>"
+#   api     = "<acr_login_server>/api:<commit_sha>"
+#   migrate = "<acr_login_server>/migrate:<commit_sha>"
+# }
+
+# ── Cost-aware dev defaults ───────────────────────────────────────────────────
+# These settings minimise cost for a development environment.
+# Adjust for production: GP_ Postgres SKU, zone_redundancy_enabled = true,
+# higher AGW autoscale and Log Analytics retention.
+
+zone_redundancy_enabled         = false
+pg_sku_name                     = "B_Standard_B1ms"
+pg_backup_retention_days        = 7
+kv_soft_delete_retention_days   = 7
+log_analytics_retention_in_days = 30
+agw_autoscale_min_capacity      = 1
+agw_autoscale_max_capacity      = 2
+
+# ── TLS ───────────────────────────────────────────────────────────────────────
+# Leave empty for demo (HTTP only). Set to a Key Vault versioned secret ID to
+# enable HTTPS on App Gateway and auto-redirect HTTP to HTTPS.
+#
+# tls_certificate_key_vault_secret_id = "https://<vault>.vault.azure.net/secrets/<name>/<version>"

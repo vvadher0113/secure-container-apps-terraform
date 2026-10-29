@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars and fill in before running terraform apply.
+# Never commit terraform.tfvars - it is excluded by .gitignore.
+
+subscription_id              = "00000000-0000-0000-0000-000000000000"
+container_app_environment_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.App/managedEnvironments/cae-goals-dev"
+user_assigned_identity_id    = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-migrate"
+acr_login_server             = "acrgoalsdev.azurecr.io"
+image                        = "acrgoalsdev.azurecr.io/migrate:abc1234"
+pghost                       = "psql-goals-dev.postgres.database.azure.com"

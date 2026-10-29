@@ -1,0 +1,111 @@
+# Reference deployment workflow.
+# Run manually via workflow_dispatch after configuring OIDC and repo variables.
+# Every job is gated on vars.AZURE_SUBSCRIPTION_ID so it skips cleanly without setup.
+# See README.md for the full list of required repo variables.
+#
+# Flow: build all images -> Trivy scan (fail on HIGH/CRITICAL) ->
+#       add runner IP to ACR -> push all -> remove IP (always()).
+name: Build and push images (reference)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag (leave blank to use the commit SHA)"
+        default: ""
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-push:
+    name: Build, scan, and push
+    runs-on: ubuntu-latest
+    if: vars.AZURE_SUBSCRIPTION_ID != ''
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          echo "value=${{ inputs.tag || github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474 # v2.3.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Build api
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        with:
+          context: app/api
+          push: false
+          load: true
+          tags: ${{ vars.ACR_LOGIN_SERVER }}/api:${{ steps.tag.outputs.value }}
+
+      - name: Build web
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        with:
+          context: app/web
+          push: false
+          load: true
+          tags: ${{ vars.ACR_LOGIN_SERVER }}/web:${{ steps.tag.outputs.value }}
+
+      - name: Build migrate
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4 # v6.15.0
+        with:
+          context: app/migrate
+          push: false
+          load: true
+          tags: ${{ vars.ACR_LOGIN_SERVER }}/migrate:${{ steps.tag.outputs.value }}
+
+      - name: Trivy scan api
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          image-ref: ${{ vars.ACR_LOGIN_SERVER }}/api:${{ steps.tag.outputs.value }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Trivy scan web
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          image-ref: ${{ vars.ACR_LOGIN_SERVER }}/web:${{ steps.tag.outputs.value }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Trivy scan migrate
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          image-ref: ${{ vars.ACR_LOGIN_SERVER }}/migrate:${{ steps.tag.outputs.value }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Add runner IP to ACR network rules
+        run: |
+          set -o pipefail
+          RUNNER_IP=$(curl -sf https://api.ipify.org)
+          az acr network-rule add \
+            --name "${{ vars.ACR_NAME }}" \
+            --ip-address "$RUNNER_IP"
+          sleep 30
+          echo "RUNNER_IP=${RUNNER_IP}" >> "$GITHUB_ENV"
+
+      - name: Login to ACR and push all images
+        run: |
+          set -o pipefail
+          az acr login --name "${{ vars.ACR_NAME }}"
+          for app in api web migrate; do
+            docker push "${{ vars.ACR_LOGIN_SERVER }}/${app}:${{ steps.tag.outputs.value }}"
+          done
+
+      - name: Remove runner IP from ACR network rules
+        if: always()
+        run: |
+          az acr network-rule remove \
+            --name "${{ vars.ACR_NAME }}" \
+            --ip-address "${{ env.RUNNER_IP }}" || true

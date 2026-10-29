@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and fill in before running terraform apply.
+# Never commit terraform.tfvars - it is excluded by .gitignore.
+
+subscription_id           = "00000000-0000-0000-0000-000000000000"
+subnet_id                 = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/virtualNetworks/vnet-goals-dev/subnets/snet-agw"
+user_assigned_identity_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-agw"
+web_fqdn                  = "app-web.cae-goals-dev.bravestone-12345.eastus2.azurecontainerapps.io"
+api_fqdn                  = "app-api.cae-goals-dev.bravestone-12345.eastus2.azurecontainerapps.io"

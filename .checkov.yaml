@@ -1,0 +1,41 @@
+# Checkov skip list. Each entry has a one-line comment stating why.
+
+skip-check:
+  # Bootstrap state storage is publicly accessible for CI; Entra auth and disabled shared keys are the control.
+  - CKV_AZURE_59
+  # State storage uses only blob containers, not Queue service; queue logging is not applicable.
+  - CKV_AZURE_33
+  # LRS is sufficient for dev/demo Terraform state.
+  - CKV_AZURE_206
+  # State storage is intentionally public for CI; no private endpoint on the bootstrap account.
+  - CKV2_AZURE_33
+  # Blob read logging on the state container is beyond the scope of this demo bootstrap.
+  - CKV2_AZURE_21
+  # Customer-managed keys on the state storage account are beyond the scope of this demo bootstrap.
+  - CKV2_AZURE_1
+  # NSG associations use azurerm_subnet_network_security_group_association; checkov cannot follow the cross-resource link.
+  - CKV2_AZURE_31
+  # Key Vault private endpoint is created by the embedded private-endpoint child module; checkov cannot follow cross-module references.
+  - CKV2_AZURE_32
+  # ACR public endpoint is open for JIT CI push only; default_action=Deny closes it at rest.
+  - CKV_AZURE_139
+  # Geo-replication is a deliberate cost trade-off for a single-region demo.
+  - CKV_AZURE_165
+  # Image quarantine is an operational feature beyond this portfolio scope.
+  - CKV_AZURE_166
+  # Image signing is an operational feature beyond this portfolio scope.
+  - CKV_AZURE_164
+  # Zone redundancy for ACR is off by default to reduce dev cost; controlled by var.zone_redundancy_enabled.
+  - CKV_AZURE_233
+  # Dedicated data endpoints are a Premium ACR feature not required for this architecture.
+  - CKV_AZURE_237
+  # Geo-redundant backups are off by default for dev; controlled by var.geo_redundant_backup_enabled.
+  - CKV_AZURE_136
+  # PostgreSQL private endpoint is created by the embedded private-endpoint child module; checkov cannot follow cross-module references.
+  - CKV2_AZURE_57
+  # Log4j2 (CVE-2021-44228) is covered by Microsoft_DefaultRuleSet 2.1; no explicit exclusion rule is needed.
+  - CKV_AZURE_135
+  # HTTP listener is present for demo mode when no TLS certificate is provided; HTTPS is used in production.
+  - CKV_AZURE_217
+  # Images are pinned by SHA256 digest via the PYTHON_IMAGE ARG; checkov cannot resolve ARG variables in FROM.
+  - CKV_DOCKER_7

@@ -1,0 +1,16 @@
+# Bootstrap state storage - run once before any other terraform apply.
+# Copy this file to terraform.tfvars, fill in the values, then run:
+#   terraform init
+#   terraform apply
+# The apply outputs a ready-to-paste backend block for infra/envs/dev/backend.tf.
+
+subscription_id      = "00000000-0000-0000-0000-000000000000"
+location             = "eastus2"
+resource_group_name  = "rg-tfstate-contoso"
+storage_account_name = "stcontosostate01" # must be globally unique, 3-24 lowercase alphanumeric
+
+tags = {
+  managed_by  = "terraform"
+  purpose     = "tfstate"
+  environment = "shared"
+}
