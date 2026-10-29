@@ -12,3 +12,6 @@ AVD-AZU-0058
 
 # Customer-managed keys on state storage are beyond the scope of this demo bootstrap.
 AVD-AZU-0060
+
+# ACR public endpoint is open for JIT CI push only; default_action=Deny closes it at rest.
+AVD-AZU-0024

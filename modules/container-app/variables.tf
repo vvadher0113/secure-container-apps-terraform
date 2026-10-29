@@ -174,7 +174,7 @@ variable "http_scale_concurrent_requests" {
   default     = null
 
   validation {
-    condition     = var.http_scale_concurrent_requests == null || var.http_scale_concurrent_requests >= 1
+    condition     = var.http_scale_concurrent_requests == null || coalesce(var.http_scale_concurrent_requests, 0) >= 1
     error_message = "http_scale_concurrent_requests must be >= 1."
   }
 }

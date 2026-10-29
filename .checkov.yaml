@@ -37,5 +37,3 @@ skip-check:
   - CKV_AZURE_135
   # HTTP listener is present for demo mode when no TLS certificate is provided; HTTPS is used in production.
   - CKV_AZURE_217
-  # Images are pinned by SHA256 digest via the PYTHON_IMAGE ARG; checkov cannot resolve ARG variables in FROM.
-  - CKV_DOCKER_7

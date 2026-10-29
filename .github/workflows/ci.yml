@@ -78,7 +78,7 @@ jobs:
           soft_fail: false
           config_file: .checkov.yaml
 
-      - uses: github/codeql-action/upload-sarif@018511a1aac61b6e92783189d8c0081eb8f69932 # v3.28.13
+      - uses: github/codeql-action/upload-sarif@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3.28.13
         if: always() && github.event.repository.visibility == 'public'
         with:
           sarif_file: checkov-results.sarif
@@ -98,8 +98,9 @@ jobs:
           output: trivy-config.sarif
           exit-code: "1"
           severity: HIGH,CRITICAL
+          trivyignores: .trivyignore
 
-      - uses: github/codeql-action/upload-sarif@018511a1aac61b6e92783189d8c0081eb8f69932 # v3.28.13
+      - uses: github/codeql-action/upload-sarif@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3.28.13
         if: always() && github.event.repository.visibility == 'public'
         with:
           sarif_file: trivy-config.sarif
@@ -154,7 +155,7 @@ jobs:
           format: sarif
           output: trivy-image-${{ matrix.app }}.sarif
 
-      - uses: github/codeql-action/upload-sarif@018511a1aac61b6e92783189d8c0081eb8f69932 # v3.28.13
+      - uses: github/codeql-action/upload-sarif@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3.28.13
         if: always() && github.event.repository.visibility == 'public'
         with:
           sarif_file: trivy-image-${{ matrix.app }}.sarif
