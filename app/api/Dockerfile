@@ -3,7 +3,7 @@ FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a7
 WORKDIR /build
 COPY requirements.txt .
 RUN python -m venv /venv \
-    && /venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /venv/bin/pip install --no-cache-dir --upgrade pip "setuptools>=78.1.1" \
     && /venv/bin/pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
