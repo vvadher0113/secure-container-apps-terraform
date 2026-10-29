@@ -9,9 +9,8 @@ environment     = "dev"
 
 vnet_address_space = ["10.20.0.0/22"]
 
-# ── Images ────────────────────────────────────────────────────────────────────
-# Phase 1 (first apply): leave commented out. The quickstart placeholder image
-#   is used so all resources can be created before any real images exist.
+# Phase 1 (first apply): leave app_images commented out.
+# The placeholder image is used so all resources can be created before any real images exist.
 # Phase 2 (after build-push): uncomment and set real ACR image tags, then re-apply.
 #
 # app_images = {
@@ -20,11 +19,7 @@ vnet_address_space = ["10.20.0.0/22"]
 #   migrate = "<acr_login_server>/migrate:<commit_sha>"
 # }
 
-# ── Cost-aware dev defaults ───────────────────────────────────────────────────
-# These settings minimise cost for a development environment.
-# Adjust for production: GP_ Postgres SKU, zone_redundancy_enabled = true,
-# higher AGW autoscale and Log Analytics retention.
-
+# Dev defaults - minimise cost. Adjust for production.
 zone_redundancy_enabled         = false
 pg_sku_name                     = "B_Standard_B1ms"
 pg_backup_retention_days        = 7
@@ -33,7 +28,6 @@ log_analytics_retention_in_days = 30
 agw_autoscale_min_capacity      = 1
 agw_autoscale_max_capacity      = 2
 
-# ── TLS ───────────────────────────────────────────────────────────────────────
 # Leave empty for demo (HTTP only). Set to a Key Vault versioned secret ID to
 # enable HTTPS on App Gateway and auto-redirect HTTP to HTTPS.
 #

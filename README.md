@@ -1,9 +1,11 @@
 # secure-container-apps-terraform
 
-A public portfolio repository demonstrating how to write reusable Terraform modules and
-compose them into a production-grade three-tier application on Azure Container Apps. Every
-module is hand-written - no Azure Verified Modules or third-party registry modules - to show
-module design, input validation, secure defaults, and testing.
+A private three-tier app on Azure Container Apps built from hand-written Terraform modules.
+Every module is custom - no Azure Verified Modules or third-party registry modules - to
+demonstrate module design, input validation, secure defaults, and testing. The architecture
+has no public data-plane exposure: Container Apps run in an internal environment behind an
+Application Gateway WAF, all PaaS services connect through private endpoints, and all
+identities are managed identities with no passwords or client secrets anywhere.
 
 The sibling repo `secure-aks-baseline-terraform` composes Azure Verified Modules. This repo
 takes the opposite approach on purpose.
@@ -17,14 +19,14 @@ graph TD
     Internet([Internet]) -->|HTTPS 443| AGW
 
     subgraph vnet["VNet 10.20.0.0/22"]
-        AGW["App Gateway WAF v2\nid-agw\nsnet-agw 10.20.0.0/24"]
+        AGW["App Gateway WAF v2<br/>id-agw<br/>snet-agw 10.20.0.0/24"]
 
-        subgraph aca["Container Apps environment - internal only\nsnet-aca 10.20.1.0/24"]
-            WEB["web container app\nnginx-unprivileged\nid-web"]
-            API["api container app\nFastAPI\nid-api"]
+        subgraph aca["Container Apps environment - internal only<br/>snet-aca 10.20.1.0/24"]
+            WEB["web container app<br/>nginx-unprivileged<br/>id-web"]
+            API["api container app<br/>FastAPI<br/>id-api"]
         end
 
-        subgraph pe["Private endpoints\nsnet-pe 10.20.2.0/24"]
+        subgraph pe["Private endpoints<br/>snet-pe 10.20.2.0/24"]
             PE_PG[postgres]
             PE_KV[keyvault]
             PE_ACR[acr]
@@ -32,19 +34,20 @@ graph TD
 
         AGW -->|"/ - host override"| WEB
         AGW -->|"/api/* - host override"| API
+        AGW -->|"KV secret via id-agw"| PE_KV
         API -->|Entra token as password| PE_PG
         API -->|KV reference via id-api| PE_KV
-        WEB -->|KV reference via id-web| PE_KV
         WEB -->|AcrPull via id-web| PE_ACR
         API -->|AcrPull via id-api| PE_ACR
     end
 
-    PE_PG --> PG[("PostgreSQL Flexible Server\nEntra-only auth\npublic access off")]
-    PE_KV --> KV["Key Vault\nRBAC mode\npublic access off"]
-    PE_ACR --> ACR["ACR Premium\ndefault deny\nprivate endpoint only"]
+    PE_PG --> PG[("PostgreSQL Flexible Server<br/>Entra-only auth<br/>public access off")]
+    PE_KV --> KV["Key Vault<br/>RBAC mode<br/>public access off"]
+    PE_ACR --> ACR["ACR Premium<br/>default deny<br/>private endpoint only"]
 
-    MIGRATE["migrate Job\nid-migrate\nEntra admin on PG"] -.->|runs in VNet| PE_PG
-    CI["CI runner\nbuild-push.yml"] -.->|JIT IP rule - push window only| ACR
+    MIGRATE["migrate Job<br/>id-migrate<br/>Entra admin on PG"] -.->|runs in VNet| PE_PG
+    MIGRATE -.->|AcrPull via id-migrate| PE_ACR
+    CI["CI runner<br/>build-push.yml"] -.->|JIT IP rule - push window only| ACR
 ```
 
 ---
@@ -232,9 +235,12 @@ az containerapp job start \
 
 ### 6. Test the endpoint
 
+The default listener is HTTP for demo use. Use `https://` if you configured a Key Vault
+certificate via `tls_certificate_key_vault_secret_id`.
+
 ```shell
-curl https://<app-gateway-public-ip>/health
-curl https://<app-gateway-public-ip>/api/items
+curl http://<app-gateway-public-ip>/health
+curl http://<app-gateway-public-ip>/api/items
 ```
 
 ---
