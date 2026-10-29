@@ -15,6 +15,8 @@ WORKDIR /app
 COPY --from=builder /venv /venv
 COPY main.py .
 
+RUN pip install --no-cache-dir "setuptools>=78.1.1" "msgpack>=1.2.3" "urllib3>=2.8.0"
+
 ENV PATH="/venv/bin:$PATH"
 
 USER app
