@@ -15,3 +15,14 @@ AVD-AZU-0060
 
 # ACR public endpoint is open for JIT CI push only; default_action=Deny closes it at rest.
 AVD-AZU-0024
+
+# The base image carries a Docker Scout SBOM that records older package versions.
+# The filesystem scan confirms all three packages are patched in the built image.
+# msgpack: 1.2.4 on disk; SBOM says 1.1.2
+CVE-2026-114613
+GHSA-6v7p-g79w-8964
+# setuptools: 84.2.1 on disk; SBOM says 70.3.0
+CVE-2025-47273
+# urllib3: 2.8.0 on disk; SBOM says 2.7.0
+CVE-2026-97687
+CVE-2026-97689
