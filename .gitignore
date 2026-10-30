@@ -42,10 +42,6 @@
 !app/**/pytest.ini
 
 # Always excluded, even if matched above
-CLAUDE.md
-**/CLAUDE.md
-.claude/
-**/.claude/
 .terraform/
 *.tfstate
 *.tfstate.*
